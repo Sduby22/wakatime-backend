@@ -10,7 +10,7 @@ var db = new Sqlite()
 const secret = 'dijawo292093iapo'
 const passwdReg = /[a-zA-Z0-9._!@#$%^&*]+/
 db.connect('../data/data.sqlite3')
-db.exec('create table if not exists USERS(ID integer primary key autoincrement, NAME text not null, pass text not null, APIKEY text, NICKNAME text, INVALID byte)')
+db.exec('create table if not exists USERS(ID integer primary key autoincrement, NAME text not null, PASS text not null, APIKEY text, NICKNAME text, INVALID byte)')
 
 app.use(express.json())
 
@@ -79,6 +79,7 @@ app.post('/api/login', (req, res) => {
   let pass = getmd5(body.password)
   db.get(`select NAME, PASS from USERS WHERE NAME=?`, [user])
     .then(e => {
+      console.log(e.PASS, ' ', pass)
       if (e && e.PASS == pass) {
         res.send({
           success: 1,
