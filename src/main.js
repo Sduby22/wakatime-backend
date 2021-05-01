@@ -79,7 +79,6 @@ app.post('/api/login', (req, res) => {
   let pass = getmd5(body.password)
   db.get(`select NAME, PASS from USERS WHERE NAME=?`, [user])
     .then(e => {
-      console.log(e.PASS, ' ', pass)
       if (e && e.PASS == pass) {
         res.send({
           success: 1,
