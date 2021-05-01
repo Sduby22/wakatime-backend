@@ -132,7 +132,7 @@ app.get('/api/leaderboards', ejwt, (_req, res) => {
 
 app.get('/api/profile', ejwt, (req, res) => {
   let user = req.user
-  db.get(`select NAME, NICKNAME, WAKA_ID from USERS WHERE NAME=?`, [user.user])
+  db.get(`select NAME, NICKNAME, WAKA_ID, INVALID from USERS WHERE NAME=?`, [user.user])
     .then(e => {
       res.send(e)
     })

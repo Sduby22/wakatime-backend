@@ -21,26 +21,10 @@ function setUsersWaka(name, obj) {
 }
 
 async function getStat(name, id) {
+  let resp = null;
+
   try {
-    let resp = await axios.get(waka_api(id))
-    let d = resp.data.data
-    let waka_id = d.user_id
-
-    function sortAndGetName(arr) {
-      arr.sort((a,b) => {
-        return b.percent - a.percent
-      })
-      return arr.map(x => x.name).join(",")
-    }
-
-    let systems = sortAndGetName(d.operating_systems)
-    let languages = sortAndGetName(d.languages)
-    let editors = sortAndGetName(d.editors)
-    let total = d.total_seconds
-    let avg = d.daily_average
-    
-    let obj = {waka_id, avg, total, systems, languages, editors}
-    await setUsersWaka(name, obj)
+    resp = await axios.get(waka_api(id))
   } catch (e) {
     if(e.response.status === 404) {
       flagInvalid(id)    
@@ -49,6 +33,31 @@ async function getStat(name, id) {
     }
     await setUsersWaka(name, null)
   }
+
+  let d = resp.data.data
+  let waka_id = d.user_id
+
+  if(!d.total_seconds) {
+    flagInvalid(id)
+    await setUsersWaka(name, null)
+    return
+  }
+
+  function sortAndGetName(arr) {
+    arr.sort((a,b) => {
+      return b.percent - a.percent
+    })
+    return arr.map(x => x.name).join(",")
+  }
+
+  let systems = sortAndGetName(d.operating_systems)
+  let languages = sortAndGetName(d.languages)
+  let editors = sortAndGetName(d.editors)
+  let total = d.total_seconds
+  let avg = d.daily_average
+  
+  let obj = {waka_id, avg, total, systems, languages, editors}
+  await setUsersWaka(name, obj)
 }
 
 function flagInvalid(id) {
