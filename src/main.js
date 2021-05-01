@@ -10,7 +10,7 @@ var db = new Sqlite()
 const secret = 'dijawo292093iapo'
 const passwdReg = /[a-zA-Z0-9._!@#$%^&*]+/
 db.connect('../data/data.sqlite3')
-db.exec('create table if not exists USERS(ID integer primary key autoincrement, NAME text not null, PASS text not null, APIKEY text, NICKNAME text, INVALID byte)')
+db.exec('create table if not exists USERS(ID integer primary key autoincrement, NAME text not null, PASS text not null, WAKA_ID text, NICKNAME text, INVALID byte)')
 
 app.use(express.json())
 
@@ -100,8 +100,8 @@ app.post('/api/edit_profile', ejwt, (req, res) => {
   if(user.user !== profile.NAME) {
     res.status(401).send('Not Authorized')
   } else {
-    db.run(`update USERS set NICKNAME = ?, APIKEY = ?, INVALID=0 where NAME = ?`
-           ,[profile.NICKNAME, profile.APIKEY, profile.NAME])
+    db.run(`update USERS set NICKNAME = ?, WAKA_ID = ?, INVALID=0 where NAME = ?`
+           ,[profile.NICKNAME, profile.WAKA_ID, profile.NAME])
       .then(()=>{
         db.run(`update USERS_WAKA set NICKNAME=? where NAME=?`, [profile.NICKNAME, profile.NAME])
       })
@@ -111,7 +111,7 @@ app.post('/api/edit_profile', ejwt, (req, res) => {
         })
       })
       .then(() => {
-        getStat(user.user, profile.APIKEY)
+        getStat(user.user, profile.WAKA_ID)
       })
       .catch(e=>{
         res.status(400).send(err_msg(e))
@@ -133,7 +133,7 @@ app.get('/api/leaderboards', ejwt, (_req, res) => {
 
 app.get('/api/profile', ejwt, (req, res) => {
   let user = req.user
-  db.get(`select NAME, NICKNAME, APIKEY from USERS WHERE NAME=?`, [user.user])
+  db.get(`select NAME, NICKNAME, WAKA_ID from USERS WHERE NAME=?`, [user.user])
     .then(e => {
       res.send(e)
     })

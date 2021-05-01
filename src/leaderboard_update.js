@@ -2,14 +2,14 @@ import Sqlite from './sql.js'
 import axios from 'axios'
 
 var db = new Sqlite()
-const waka_api = 'https://wakatime.com/api/v1/users/current/stats/last_7_days'
+const waka_api = (waka_id) => `https://wakatime.com/api/v1/users/${waka_id}/stats/last_7_days`
 db.connect('../data/data.sqlite3')
 db.exec('create table if not exists USERS_WAKA(ID integer primary key autoincrement, NAME text not null, TOTAL integer, AVG integer, SYSTEMS text, LANGUAGES text, EDITORS text, WAKA_ID text, NICKNAME text)')
 
 async function getallStat() {
   let users = await getall() 
   for (let user of users) {
-    getStat(user.NAME, user.APIKEY)
+    getStat(user.NAME, user.WAKA_ID)
   }
 }
 
@@ -20,9 +20,9 @@ function setUsersWaka(name, obj) {
     return db.run(`update USERS_WAKA set WAKA_ID=?, AVG=?, TOTAL=?, SYSTEMS=?,LANGUAGES=?,EDITORS=? where NAME=?`, [null,null,null,null,null,null,name])
 }
 
-async function getStat(name, apikey) {
+async function getStat(name, id) {
   try {
-    let resp = await axios.get(waka_api + '?api_key=' + apikey)
+    let resp = await axios.get(waka_api(id))
     let d = resp.data.data
     let waka_id = d.user_id
 
@@ -42,8 +42,8 @@ async function getStat(name, apikey) {
     let obj = {waka_id, avg, total, systems, languages, editors}
     await setUsersWaka(name, obj)
   } catch (e) {
-    if(e.response.status === 401) {
-      flagInvalid(apikey)    
+    if(e.response.status === 404) {
+      flagInvalid(id)    
     } else {
       throw e
     }
@@ -51,13 +51,13 @@ async function getStat(name, apikey) {
   }
 }
 
-function flagInvalid(apikey) {
-  return db.run(`update USERS set INVALID=1 where APIKEY=?`, [apikey])
+function flagInvalid(id) {
+  return db.run(`update USERS set INVALID=1 where WAKA_ID=?`, [id])
 }
 
 async function getall() {
   try {
-    let res = await db.all(`select NAME, APIKEY from USERS where APIKEY is not null and INVALID = 0`)
+    let res = await db.all(`select NAME, WAKA_ID from USERS where WAKA_ID is not null and INVALID = 0`)
     return res
   } catch {
     console.error('getall() failed..')
