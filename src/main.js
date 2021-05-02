@@ -10,7 +10,7 @@ var db = new Sqlite()
 const secret = 'dijawo292093iapo'
 const passwdReg = /[a-zA-Z0-9._!@#$%^&*]+/
 db.connect('../data/data.sqlite3')
-db.exec('create table if not exists USERS(ID integer primary key autoincrement, NAME text not null, PASS text not null, WAKA_ID text, NICKNAME text, INVALID byte)')
+db.exec('create table if not exists USERS(ID integer primary key autoincrement, NAME text not null, PASS text not null, WAKA_ID text, NICKNAME text, INVALID text)')
 
 app.use(express.json())
 
@@ -24,7 +24,7 @@ function err_msg(msg) {
     msg
   }
 }
- 
+
 function getmd5(string) {
   const salt = 'sadasdd2'
   var md5 = crypto.createHash('md5')
@@ -61,9 +61,10 @@ app.post('/api/register', (req, res) => {
               success: 1,
               user: {
                 user: user,
-                jwt: sign({user})
+                jwt: sign({ user })
               }
-            })})
+            })
+          })
           .catch(e => {
             res.status(400).send(err_msg(e))
           })
@@ -84,7 +85,7 @@ app.post('/api/login', (req, res) => {
           success: 1,
           user: {
             user: user,
-            jwt: sign({user})
+            jwt: sign({ user })
           }
         })
       } else {
@@ -96,23 +97,23 @@ app.post('/api/login', (req, res) => {
 app.post('/api/edit_profile', ejwt, (req, res) => {
   let user = req.user
   let profile = req.body
-  if(user.user !== profile.NAME) {
+  if (user.user !== profile.NAME) {
     res.status(401).send('Not Authorized')
   } else {
-    db.run(`update USERS set NICKNAME = ?, WAKA_ID = ?, INVALID=0 where NAME = ?`
-           ,[profile.NICKNAME, profile.WAKA_ID, profile.NAME])
-      .then(()=>{
+    db.run(`update USERS set NICKNAME = ?, WAKA_ID = ?, INVALID=NULL where NAME = ?`
+      , [profile.NICKNAME, profile.WAKA_ID, profile.NAME])
+      .then(() => {
         db.run(`update USERS_WAKA set NICKNAME=? where NAME=?`, [profile.NICKNAME, profile.NAME])
       })
-      .then(()=>{
+      .then(() => {
         res.send({
-            success: 1
+          success: 1
         })
       })
       .then(() => {
         getStat(user.user, profile.WAKA_ID)
       })
-      .catch(e=>{
+      .catch(e => {
         res.status(400).send(err_msg(e))
       })
   }
@@ -138,4 +139,4 @@ app.get('/api/profile', ejwt, (req, res) => {
     })
 })
 
-app.listen(3000, () => {})
+app.listen(3000, () => { })
