@@ -55,7 +55,7 @@ async function getStat(name, id) {
     arr.sort((a, b) => {
       return b.percent - a.percent
     })
-    return arr.map(x => x.name).join(",")
+    return arr.map(x => x.name).join(", ")
   }
 
   let systems = sortAndGetName(d.operating_systems)
