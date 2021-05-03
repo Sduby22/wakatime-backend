@@ -51,16 +51,18 @@ async function getStat(name, id) {
     return
   }
 
-  function sortAndGetName(arr) {
+  function sortAndGetName(arr, filter) {
     arr.sort((a, b) => {
       return b.percent - a.percent
     })
-    return arr.map(x => x.name).join(", ")
+    return arr.filter(filter).map(x => x.name).join(", ")
   }
 
-  let systems = sortAndGetName(d.operating_systems)
-  let languages = sortAndGetName(d.languages)
-  let editors = sortAndGetName(d.editors)
+  const filter = x => x.percent > 1
+
+  let systems = sortAndGetName(d.operating_systems, filter)
+  let languages = sortAndGetName(d.languages, filter)
+  let editors = sortAndGetName(d.editors, filter)
   let total = d.total_seconds
   let avg = d.daily_average
 
